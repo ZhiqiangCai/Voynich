@@ -208,5 +208,129 @@ namespace Voynich
                 this.richTextBox1.AppendText(n + "\r\n");
             }
         }
+
+        private void tTRToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (corpusFiles == null) openCorups();
+          
+            this.richTextBox1.Clear();
+            foreach (FileInfo f in corpusFiles)
+            {
+                int count = 0;
+                HashSet<string> wordTypes = new HashSet<string>();
+                string text = "";
+                using (StreamReader sr = new StreamReader(f.FullName))
+                {
+                    text = sr.ReadToEnd();
+                }
+                string[] tokens = text.Trim().Split(" \t\r\n,-_=".ToArray());
+                foreach (string t in tokens)
+                {
+                    count++;
+                    wordTypes.Add(t);
+                }
+                this.richTextBox1.AppendText(f.Name + "\t" + count + "\t"+wordTypes.Count+"\t" + Math.Round(wordTypes.Count * 1F / count, 4)+"\r\n");
+            }
+        }
+
+        private void tTRByWindowToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (corpusFiles == null) openCorups();
+
+            this.richTextBox1.Clear();
+            List<List<string>> pageTokens = new List<List<string>>();
+            foreach (FileInfo f in corpusFiles)
+            {
+                string text = "";
+                using (StreamReader sr = new StreamReader(f.FullName))
+                {
+                    text = sr.ReadToEnd();
+                }
+                string[] tokens = text.Trim().Split(" \t\r\n,-_=".ToArray());
+                List<string> tokenList = new List<string>();
+                foreach (string t in tokens)
+                    if (t.Trim() != "") tokenList.Add(t);
+                pageTokens.Add(tokenList);
+            }
+            for (int width = 0; width < 100; width++)
+                for (int i = 0; i < pageTokens.Count - width; i++)
+                {
+                    HashSet<string> typeSet = new HashSet<string>();
+                    int count = 0;
+                    for (int k = i; k < i + width + 1; k++)
+                    {
+                            foreach (string t in pageTokens[k])
+                            {
+                            count++;
+                            typeSet.Add(t);
+                            }
+                    }
+                    this.richTextBox1.AppendText((i + 1) + "\t" + (i + width + 1) + "\t" + (width + 1) + "\t" + count + "\t" + typeSet.Count+"\t"+Math.Log(count)+"\t"+Math.Log(typeSet.Count)+"\r\n");
+                }
+        }
+
+        private void benfordsLawToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+           
+        }
+
+        private void benfordLawToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (corpusFiles == null) openCorups();
+
+            this.richTextBox1.Clear();
+            Dictionary<char, int> leadCount = new Dictionary<char, int>();
+            foreach (FileInfo f in corpusFiles)
+            {
+
+                string text = "";
+                using (StreamReader sr = new StreamReader(f.FullName))
+                {
+                    text = sr.ReadToEnd();
+                }
+                string[] tokens = text.Trim().Split(" \t\r\n,-_=".ToArray());
+                foreach (string t in tokens)
+                {
+                    if (t.Trim() == "") continue;
+                    char ch = t.Trim()[0];
+                    if (leadCount.ContainsKey(ch)) leadCount[ch]++;
+                    else leadCount.Add(ch, 1);
+                }
+
+            }
+            foreach (char ch in leadCount.Keys)
+                this.richTextBox1.AppendText(ch + "\t" + leadCount[ch] + "\r\n");
+        }
+
+        private void benfordLawByWordToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (corpusFiles == null) openCorups();
+
+            this.richTextBox1.Clear();
+            Dictionary<string, int> leadCount = new Dictionary<string, int>();
+            foreach (FileInfo f in corpusFiles)
+            {
+
+                string text = "";
+                using (StreamReader sr = new StreamReader(f.FullName))
+                {
+                    while (sr.Peek() > -1)
+                    {
+                        text = sr.ReadLine().Trim();
+                        if (text == "") continue;
+                        string[] tokens = text.Trim().Split(" \t\r\n,-_=".ToArray());
+                        string w = tokens[0].Trim();
+                        if (w == "") continue;
+                        if (leadCount.ContainsKey(w)) leadCount[w]++;
+                        else leadCount.Add(w, 1);
+                    }
+                }
+               
+                 
+
+            }
+            foreach (string w in leadCount.Keys)
+                this.richTextBox1.AppendText(w + "\t" + leadCount[w] + "\r\n");
+        }
     }
 }
